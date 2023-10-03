@@ -1,20 +1,27 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Routes, RouterModule } from '@angular/router';
 
 import { IonicModule } from '@ionic/angular';
 
-import { DiscoverPageRoutingModule } from './discover-routing.module';
-
 import { DiscoverPage } from './discover.page';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: DiscoverPage
+  }
+];
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    DiscoverPageRoutingModule
+    RouterModule.forChild(routes)
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [DiscoverPage]
 })
-export class DiscoverPageModule {}
+export class DiscoverPageModule { }

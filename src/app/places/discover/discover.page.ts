@@ -1,44 +1,56 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { MenuController } from '@ionic/angular';
+import { SegmentChangeEventDetail } from '@ionic/core';
+import { Subscription } from 'rxjs';
+
 import { PlacesService } from '../places.service';
 import { Place } from '../place.model';
-import { InfiniteScrollCustomEvent, MenuController, SegmentChangeEventDetail } from '@ionic/angular';
-
+import { AuthService } from '../../auth/auth.service';
 @Component({
   selector: 'app-discover',
   templateUrl: './discover.page.html',
-  styleUrls: ['./discover.page.scss'],
+  styleUrls: ['./discover.page.scss']
 })
-export class DiscoverPage implements OnInit {
-  loadedPlaces: Place[] = [];
+export class DiscoverPage implements OnInit, OnDestroy {
+  loadedPlaces!: Place[];
   listedLoadedPlaces!: Place[];
-  items: string[] = [];
+  relevantPlaces!: Place[];
+  private placesSub!: Subscription;
 
-  ev!: CustomEvent;
-
-  constructor(private placesService: PlacesService, private menuCtrl: MenuController) { }
+  constructor(
+    private placesService: PlacesService,
+    private menuCtrl: MenuController,
+    private authService: AuthService
+  ) { }
 
   ngOnInit() {
-    this.loadedPlaces = this.placesService.places;
-    this.generateItems();
+    this.placesSub = this.placesService.places.subscribe(places => {
+      this.loadedPlaces = places;
+      this.relevantPlaces = this.loadedPlaces;
+      this.listedLoadedPlaces = this.relevantPlaces.slice(1);
+    });
+  }
 
-  }
-  private generateItems() {
-    const count = this.items.length + 1;
-    for (let i = 0; i < 3; i++) {
-      this.items.push(`Item ${count + i}`);
-    }
-  }
-  onIonInfinite(ev: any) {
-    this.generateItems();
-    setTimeout(() => {
-      (ev as InfiniteScrollCustomEvent).target.complete();
-    }, 500);
-  }
   onOpenMenu() {
     this.menuCtrl.toggle();
   }
-  onFilterUpdate($event: CustomEvent<SegmentChangeEventDetail>) {
-    // Your code here...
-    console.log($event);
+
+  onFilterUpdate(event: Event) {
+    const customEvent = event as CustomEvent<SegmentChangeEventDetail>;
+    if (customEvent.detail.value === 'all') {
+      this.relevantPlaces = this.loadedPlaces;
+      this.listedLoadedPlaces = this.relevantPlaces.slice(1);
+    } else {
+      this.relevantPlaces = this.loadedPlaces.filter(
+        place => place.userId !== this.authService.userId
+      );
+      this.listedLoadedPlaces = this.relevantPlaces.slice(1);
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.placesSub) {
+      this.placesSub.unsubscribe();
+    }
   }
 }
