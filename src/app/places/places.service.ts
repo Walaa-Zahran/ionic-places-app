@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, delay, map, take, tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -43,7 +44,7 @@ export class PlacesService {
   get places() {
     return this._places.asObservable()
   }
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private http: HttpClient) { }
   getPlace(id: string) {
     return this.places.pipe(take(1), map(places => {
       const place = places.find(p => p.id === id);
@@ -75,13 +76,16 @@ export class PlacesService {
       dateTo,
       this.authService.userId
     );
-    return this.places.pipe(take(1), delay(1000), tap(places => {
+    return this.http.post('https://ionic-angular-course-eb216-default-rtdb.firebaseio.com/offered-places.json', { ...newPlace, id: null }).pipe(tap(resData => {
+      console.log(resData);
+    }));
+    // return this.places.pipe(take(1), delay(1000), tap(places => {
 
-      this._places.next(places.concat(newPlace));
+    //   this._places.next(places.concat(newPlace));
 
-    }))
+    // }))
   }
-  updateOffer(placeId: string, title: string, description: string) {
+  updatePlace(placeId: string, title: string, description: string) {
     return this.places.pipe(take(1), tap(places => {
       const updatedPlaceIndex = places.findIndex(pl => pl.id === placeId);
       const updatedPlaces = [...places];
