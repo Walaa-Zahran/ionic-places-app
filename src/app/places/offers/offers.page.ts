@@ -17,6 +17,7 @@ export class OffersPage implements OnInit {
   ngOnInit() {
     this.offers = this.placesService.places;
   }
+
   onEdit(offerId: string, slidingItem: IonItemSliding) {
     slidingItem.close();
     console.log('Edit item: ', offerId)
