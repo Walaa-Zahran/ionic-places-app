@@ -81,4 +81,13 @@ export class PlacesService {
 
     }))
   }
+  updateOffer(placeId: string, title: string, description: string) {
+    return this.places.pipe(take(1), tap(places => {
+      const updatedPlaceIndex = places.findIndex(pl => pl.id === placeId);
+      const updatedPlaces = [...places];
+      const old = updatedPlaces[updatedPlaceIndex];
+      updatedPlaces[updatedPlaceIndex] = new Place(old.id, title, description, old.imageUrl, old.price, old.availableFrom, old.availableTo, old.userId);
+      this._places.next(updatedPlaces);
+    }));
+  }
 }
