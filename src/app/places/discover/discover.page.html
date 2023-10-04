@@ -8,7 +8,7 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-segment (ionChange)="onFilterUpdate(ev)" value="all">
+  <ion-segment (ionChange)="onFilterUpdate($event)" value="all">
     <ion-segment-button value="all">
       All Places
     </ion-segment-button>
@@ -49,9 +49,7 @@
             </ion-label>
           </ion-item>
         </ion-list>
-        <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
-          <ion-infinite-scroll-content></ion-infinite-scroll-content>
-        </ion-infinite-scroll>
+
       </ion-col>
     </ion-row>
   </ion-grid>

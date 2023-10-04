@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
+import { BehaviorSubject, map, take } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlacesService {
-  private _places: Place[] = [
+  private _places = new BehaviorSubject<Place[]>([
     new Place(
       'p1',
       'Manhattan Mansion',
@@ -38,17 +39,30 @@ export class PlacesService {
       'abc'
 
     )
-  ];
+  ]);
   get places() {
-    return [...this._places];
+    return this._places.asObservable()
   }
   constructor(private authService: AuthService) { }
-  getPlace(id: string): Place {
-    const place = this._places.find(p => p.id === id);
-    if (!place) {
-      throw new Error(`No place found with id ${id}`);
-    }
-    return { ...place };
+  getPlace(id: string) {
+    return this.places.pipe(take(1), map(places => {
+      const place = places.find(p => p.id === id);
+      if (place) {
+        return place;
+      } else {
+        // Return a default Place object if no matching place is found
+        return new Place(
+          'default-id',
+          'default-title',
+          'default-description',
+          'default-imageUrl',
+          0,
+          new Date(),
+          new Date(),
+          'default-userId'
+        );
+      }
+    }));
   }
   addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
     const newPlace = new Place(
@@ -61,6 +75,8 @@ export class PlacesService {
       dateTo,
       this.authService.userId
     );
-    this._places.push(newPlace);
+    this.places.pipe(take(1)).subscribe((places) => {
+      this._places.next(places.concat(newPlace));
+    })
   }
 }
