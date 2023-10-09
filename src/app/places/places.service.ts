@@ -3,48 +3,85 @@ import { Place } from './place.model';
 import { AuthService } from '../auth/auth.service';
 import { BehaviorSubject, delay, map, switchMap, take, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+interface PlaceData {
+  availableFrom: string;
+  availableTo: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  title: string;
+  userId: string;
+}
+// [
+//   new Place(
+//     'p1',
+//     'Manhattan Mansion',
+//     'In the heart of new york city',
+//     'https://thumbs.6sqft.com/wp-content/uploads/2014/06/21042533/Carnegie-Mansion-nyc.jpg', 149.99,
+//     new Date('2019-01-01'),
+//     new Date('2019-01-02'),
+//     'abc'
 
+//   ),
+//   new Place(
+//     'p2',
+//     'L\'Amour Toujours',
+//     'A romantic place in Paris',
+//     'https://www.meandhimphotography.com/cache/images/677x_a13099a06c902e9d9c7051e350fb8465.jpg',
+//     189.99,
+//     new Date('2019-01-01'),
+//     new Date('2019-01-02'),
+//     'abc'
+//   ),
+//   new Place(
+//     'p3',
+//     'The Foggy Palace',
+//     'Not your average city trip',
+//     'https://t4.ftcdn.net/jpg/05/83/89/09/360_F_583890918_fzQMBskLiehG2psD48jkotRx1B2tQNlH.jpg',
+//     99.99,
+//     new Date('2019-01-01'),
+//     new Date('2019-01-02'),
+//     'abc'
+
+//   )
+// ]
 @Injectable({
   providedIn: 'root'
 })
 export class PlacesService {
-  private _places = new BehaviorSubject<Place[]>([
-    new Place(
-      'p1',
-      'Manhattan Mansion',
-      'In the heart of new york city',
-      'https://thumbs.6sqft.com/wp-content/uploads/2014/06/21042533/Carnegie-Mansion-nyc.jpg', 149.99,
-      new Date('2019-01-01'),
-      new Date('2019-01-02'),
-      'abc'
-
-    ),
-    new Place(
-      'p2',
-      'L\'Amour Toujours',
-      'A romantic place in Paris',
-      'https://www.meandhimphotography.com/cache/images/677x_a13099a06c902e9d9c7051e350fb8465.jpg',
-      189.99,
-      new Date('2019-01-01'),
-      new Date('2019-01-02'),
-      'abc'
-    ),
-    new Place(
-      'p3',
-      'The Foggy Palace',
-      'Not your average city trip',
-      'https://t4.ftcdn.net/jpg/05/83/89/09/360_F_583890918_fzQMBskLiehG2psD48jkotRx1B2tQNlH.jpg',
-      99.99,
-      new Date('2019-01-01'),
-      new Date('2019-01-02'),
-      'abc'
-
-    )
-  ]);
+  private _places = new BehaviorSubject<Place[]>([]);
   get places() {
     return this._places.asObservable()
   }
   constructor(private authService: AuthService, private http: HttpClient) { }
+  fetchPlaces() {
+    return this.http
+      .get<{ [key: string]: PlaceData }>('https://ionic-angular-course-eb216-default-rtdb.firebaseio.com/offered-plaes.json')
+      .pipe(map(resData => {
+        const places = [];
+        for (const key in resData) {
+          if (resData.hasOwnProperty(key)) {
+            places.push(new Place(
+              key,
+              resData[key].title,
+              resData[key].description,
+              resData[key].imageUrl,
+              resData[key].price,
+              new Date(resData[key].availableFrom),
+              new Date(resData[key].availableTo),
+              resData[key].userId
+            )
+            );
+          }
+        }
+        return places;
+      }),
+        tap(places => {
+          this._places.next(places);
+        })
+      )
+  }
+
   getPlace(id: string) {
     return this.places.pipe(take(1), map(places => {
       const place = places.find(p => p.id === id);
