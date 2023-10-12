@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { take, map, tap, delay, switchMap } from 'rxjs/operators';
 
 import { Place } from './place.model';
@@ -94,24 +94,32 @@ export class PlacesService {
       );
   }
 
-  getPlace(placeId: string): Observable<Place> {
-    return this.http.get<PlaceData>(`https://ionic-angular-course-eb216-default-rtdb.firebaseio.com/offered-places/${placeId}.json`)
+  // getPlace(placeId: string): Observable<Place> {
+  //   return this.http.get<PlaceData>(`https://ionic-angular-course-eb216-default-rtdb.firebaseio.com/offered-places/${placeId}.json`)
+  //     .pipe(
+  //       map(placeData => {
+  //         return new Place(
+  //           placeId,
+  //           placeData.title,
+  //           placeData.description,
+  //           placeData.imageUrl,
+  //           placeData.price,
+  //           new Date(placeData.availableFrom),
+  //           new Date(placeData.availableTo),
+  //           placeData.userId
+  //         );
+  //       })
+  //     );
+  // }
+  getPlace(id: string) {
+    return this.http
+      .get<PlaceData>(`https://ionic-angular-course-eb216-default-rtdb.firebaseio.com/offered-places/${id}.json`)
       .pipe(
         map(placeData => {
-          return new Place(
-            placeId,
-            placeData.title,
-            placeData.description,
-            placeData.imageUrl,
-            placeData.price,
-            new Date(placeData.availableFrom),
-            new Date(placeData.availableTo),
-            placeData.userId
-          );
+          return new Place(id, placeData.title, placeData.description, placeData.imageUrl, placeData.price, new Date(placeData.availableFrom), new Date(placeData.availableTo), placeData.userId)
         })
-      );
+      )
   }
-
   addPlace(
     title: string,
     description: string,
@@ -162,6 +170,14 @@ export class PlacesService {
     let updatedPlaces: Place[];
     return this.places.pipe(
       take(1),
+      switchMap(places => {
+        if (!places || places.length <= 0) {
+          return this.fetchPlaces();
+        } else {
+          return of(places);
+        }
+
+      }),
       switchMap(places => {
         const updatedPlaceIndex = places.findIndex(pl => pl.id === placeId);
         updatedPlaces = [...places];
