@@ -30,7 +30,8 @@
     </ion-row>
     <ion-row>
       <ion-col size-sm="6" offset-sm="3" class="ion-no-padding">
-        <ion-img [src]="place.location.staticMapImageUrl" class="location-image"></ion-img>
+        <ion-img (click)="onShowFullMap()" role="button" [src]="place.location.staticMapImageUrl"
+          class="location-image"></ion-img>
       </ion-col>
     </ion-row>
     <ion-row *ngIf="isBookable">
