@@ -63,7 +63,8 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
             place.price || 0,
             place.availableFrom || new Date(),
             place.availableTo || new Date(),
-            place.userId || ''
+            place.userId || '',
+            place.location || '',
           );
           this.isBookable = place.userId !== this.authService.userId;
           this.isLoading = false;
