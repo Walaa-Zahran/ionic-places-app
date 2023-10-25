@@ -1,5 +1,7 @@
 {
   "name": "Ionic Places App",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }
